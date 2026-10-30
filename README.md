@@ -22,6 +22,9 @@ Postgres and Redis services.
   | `root/bin/backup.sh` | Nightly backup: dumps, restic, forget, healthchecks.io ping (URL in root-only `/etc/restic/healthchecks-url`) |
   | `root/bin/pg_dump_files.sh` | Dump every Dokku Postgres service to `/var/dump/pg/` (new services are found automatically) |
 
+- [`tools/`](tools): one-time root scripts, e.g. `restic_password_file.sh` (moves the
+  restic password into `/root/.restic-password`).
+
 ## Workflow
 
 - Root commands are run by hand on the server. `sudo` needs a password, so agents only

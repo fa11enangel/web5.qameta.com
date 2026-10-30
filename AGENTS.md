@@ -90,7 +90,9 @@ networks and are not published. Anything else on a public interface — especial
 `/etc/cron.d/backup` (root, 0600 since 2026-10-30, unchanged since 2023-06-22) runs
 `nice -n 19 /root/bin/backup.sh` **every hour at :28** (`28 * * * *`). It also sets
 `RESTIC_REPOSITORY` (`sftp:u230071-sub7@u230071.your-storagebox.de:/restic-repo`, a
-Hetzner Storage Box sub-account) and `RESTIC_PASSWORD`. No `MAILTO`, and there is no MTA
+Hetzner Storage Box sub-account) and `RESTIC_PASSWORD` (pending: moved to
+`RESTIC_PASSWORD_FILE=/root/.restic-password` by `tools/restic_password_file.sh`, like
+eltern.server; see TODO). No `MAILTO`, and there is no MTA
 anyway. **Never copy the password into this
 repo.** The scripts are tracked in `server/root/bin/` (rewritten 2026-10-30 after web1):
 
@@ -123,7 +125,8 @@ restic is the Ubuntu package 0.12.1: repository format v1 only (no compression) 
 `/etc/cron.d/ikos-postgres.dump` is an empty file (2024-08-09), most likely created by a
 mistyped redirect. Cron ignores it.
 
-Restore (as root, with `RESTIC_*` from the cron file exported):
+Restore (as root; after the password-file move a root shell has `RESTIC_REPOSITORY` and
+`RESTIC_PASSWORD_FILE` from `/root/.bashrc`, so `restic` works directly):
 
 ```sh
 restic snapshots | tail -5
@@ -135,7 +138,7 @@ dokku postgres:import ikos-18 < /tmp/restore/var/dump/pg/ikos-18.dump     # over
 
 `server/` mirrors the readable config files that differ from package defaults (Docker,
 timesyncd, nginx, restic path list, default page) and the backup scripts in `root/bin/`. When you change one of them on the
-server, copy it back here and commit. Not included: `/etc/cron.d/backup` (holds the
+server, copy it back here and commit. `tools/` holds one-time root scripts. Not included: `/etc/cron.d/backup` (holds the
 restic password) and `/etc/restic/healthchecks-url`.
 
 ## Common tasks
@@ -193,6 +196,12 @@ Audit of 2026-10-30 (read-only, no root). Root commands are for the user to run 
   forget all fine. Old `/var/dump/pg/ikos-postgres.dump` deleted at 14:37 (restic keeps
   its history). Still to do: confirm the 15:28 cron run pings start + success on
   healthchecks.io.
+- [ ] **One restic password file**, as on eltern.server: run `tools/restic_password_file.sh`
+  (uploaded to `/home/konstantin/` on 2026-10-30). It writes `/root/.restic-password`
+  (0600), tests it with `restic cat config`, then replaces `RESTIC_PASSWORD` in
+  `/etc/cron.d/backup` and `/root/.bashrc` with `RESTIC_PASSWORD_FILE` (adds the exports
+  to `.bashrc` if missing). Old copies go to `/root/restic-migration-bak-<date>/`; delete
+  them after the next cron run pings OK.
 - [ ] Repository has 29,434 index files (loading them takes ~30 s per run): one per hourly
   run since 2023 (~8,760 a year), never pruned. The first `prune` will consolidate them.
 - [ ] Since `/etc` was added, snapshots have the paths `/etc` + `/var/dump`, a new group
