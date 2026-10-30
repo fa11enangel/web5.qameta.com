@@ -185,9 +185,17 @@ Audit of 2026-10-30 (read-only, no root). Root commands are for the user to run 
 - [ ] **Backups — new scripts** installed 2026-10-30 14:29 (see [Backups](#backups); old
   script kept as `/root/bin/backup.sh.bak-2026-10-30`). `pg_dump_files.sh` tested by
   hand: `ikos-16.dump` (595 KB) and `ikos-18.dump` (598 KB) written; `ikos-18.dump` is the
-  same size as the old `ikos-postgres.dump`, so the app's db is `ikos-18`. Still to do: confirm
-  the first nightly run pings OK, then delete the old `/var/dump/pg/ikos-postgres.dump`
-  (restic keeps its history).
+  same size as the old `ikos-postgres.dump`, so the app's db is `ikos-18`. Full
+  `backup.sh` run by hand at 14:34: dump, snapshot `9ccf6e8c` (`/etc` + `/var/dump`),
+  forget all fine. Still to do: confirm the start/success pings on healthchecks.io, then
+  delete the old `/var/dump/pg/ikos-postgres.dump` (restic keeps its history).
+- [ ] Cron schedule: snapshots ran daily at 23:28 UTC until 2026-10-29, but on 2026-10-30
+  at 13:28 and 14:28 (old script, by cron). Check `/etc/cron.d/backup` is back to daily.
+- [ ] Repository has 29,434 index files (loading them takes ~30 s per run) because it was
+  never pruned since 2023. The first `prune` will consolidate them.
+- [ ] Since `/etc` was added, snapshots have the paths `/etc` + `/var/dump`, a new group
+  for `forget`. The 108 old `/var/dump`-only snapshots are no longer thinned out; forget
+  them by hand once the new group has enough history.
 - [ ] Retention: `forget` runs without `--prune`, so the repository only grows. Move it to
   a weekly `forget_backup.sh` with `--prune` + `check` and its own healthchecks.io check,
   like web1. Do it after the restic upgrade (prune in 0.12 is slow).
