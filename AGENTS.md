@@ -64,7 +64,7 @@ Unlike web1/web2 this host is still on Ubuntu, not Debian 13. No ISPConfig.
 | App / service | Notes |
 |---|---|
 | `ikos` | Rails (Puma 7.2, Ruby 4.0.9, herokuish), `RAILS_ENV=production`, 2 web dynos on :5000, plus `resque:work` worker and `resque:scheduler`. Domain `www.iko-datenbank.de` (CNAME → `web5.qameta.com`), Let's Encrypt cert valid to 2026-12-23 |
-| `ikos-18` | Dokku Postgres service (PG 18), linked. The unlinked leftover `ikos-16` was destroyed on 2026-10-30; its last dump is `/var/dump/pg/ikos-16.dump` |
+| `ikos-18` | Dokku Postgres service (PG 18), linked. The unlinked leftover `ikos-16` was destroyed on 2026-10-30; its last dump is only in older restic snapshots |
 | `ikos-redis` | Dokku Redis service (Resque queue), linked |
 
 `/var/lib/dokku/data/storage` is empty: the app has no persistent volumes.
@@ -198,8 +198,8 @@ Audit of 2026-10-30 (read-only, no root). Root commands are for the user to run 
   `serverservice@qameta.com`, like web1. Until then cron and unattended-upgrades errors
   are silent (backups at least ping healthchecks.io).
 - [x] `ikos-16` destroyed (2026-10-30, no linked apps). Its final dump
-  `/var/dump/pg/ikos-16.dump` (2026-10-30 14:29) stays in `/var/dump/pg/` and is no longer
-  updated; delete it once it is surely not needed (restic keeps it in older snapshots).
+  `/var/dump/pg/ikos-16.dump` (2026-10-30 14:29) was deleted at 14:33; older restic
+  snapshots still have it.
 - [ ] Remove the leftover Caddy proxy container (`dokku caddy:stop`, after checking
   `dokku proxy:report ikos` shows `nginx`).
 - [ ] Pending updates (2026-10-30): 3 security updates incl. kernel 5.15.0-202
