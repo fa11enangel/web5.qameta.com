@@ -190,8 +190,9 @@ Audit of 2026-10-30 (read-only, no root). Root commands are for the user to run 
   hand: `ikos-16.dump` (595 KB) and `ikos-18.dump` (598 KB) written; `ikos-18.dump` is the
   same size as the old `ikos-postgres.dump`, so the app's db is `ikos-18`. Full
   `backup.sh` run by hand at 14:34: dump, snapshot `9ccf6e8c` (`/etc` + `/var/dump`),
-  forget all fine. Still to do: confirm the start/success pings on healthchecks.io, then
-  delete the old `/var/dump/pg/ikos-postgres.dump` (restic keeps its history).
+  forget all fine. Old `/var/dump/pg/ikos-postgres.dump` deleted at 14:37 (restic keeps
+  its history). Still to do: confirm the 15:28 cron run pings start + success on
+  healthchecks.io.
 - [ ] Repository has 29,434 index files (loading them takes ~30 s per run): one per hourly
   run since 2023 (~8,760 a year), never pruned. The first `prune` will consolidate them.
 - [ ] Since `/etc` was added, snapshots have the paths `/etc` + `/var/dump`, a new group
