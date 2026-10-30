@@ -87,17 +87,20 @@ networks and are not published. Anything else on a public interface — especial
 
 ## Backups
 
-`/etc/cron.d/backup` (root-only, from 2023-06-22) runs `/root/bin/backup.sh`; it also
-holds `RESTIC_REPOSITORY` and `RESTIC_PASSWORD`. **Never copy the password into this
+`/etc/cron.d/backup` (root, 0600 since 2026-10-30, unchanged since 2023-06-22) runs
+`nice -n 19 /root/bin/backup.sh` **every hour at :28** (`28 * * * *`). It also sets
+`RESTIC_REPOSITORY` (`sftp:u230071-sub7@u230071.your-storagebox.de:/restic-repo`, a
+Hetzner Storage Box sub-account) and `RESTIC_PASSWORD`. No `MAILTO`, and there is no MTA
+anyway. **Never copy the password into this
 repo.** The scripts are tracked in `server/root/bin/` (rewritten 2026-10-30 after web1):
 
 1. `/root/bin/backup.sh`:
    - runs `pg_dump_files.sh`, then
      `restic backup --exclude-file /etc/restic/excludes.txt --files-from /etc/restic/backup.txt`;
-   - pings healthchecks.io: `/start` first, then a plain ping when both steps succeed,
+   - pings healthchecks.io (so the check expects a ping every hour): `/start` first, then a plain ping when both steps succeed,
      or `<ping-url>/fail` (and exit 1) when either fails. restic still runs if a dump
      failed, so the other dumps are still saved;
-   - then `restic forget --keep-daily 90 --keep-weekly 20 --keep-monthly 12
+   - then (every hour) `restic forget --keep-daily 90 --keep-weekly 20 --keep-monthly 12
      --keep-yearly 75`, **without `--prune`**, so forgotten data stays in the repository
      (see TODO);
    - the ping URL lives in `/etc/restic/healthchecks-url` (root, 0600), not in the
@@ -189,10 +192,8 @@ Audit of 2026-10-30 (read-only, no root). Root commands are for the user to run 
   `backup.sh` run by hand at 14:34: dump, snapshot `9ccf6e8c` (`/etc` + `/var/dump`),
   forget all fine. Still to do: confirm the start/success pings on healthchecks.io, then
   delete the old `/var/dump/pg/ikos-postgres.dump` (restic keeps its history).
-- [ ] Cron schedule: snapshots ran daily at 23:28 UTC until 2026-10-29, but on 2026-10-30
-  at 13:28 and 14:28 (old script, by cron). Check `/etc/cron.d/backup` is back to daily.
-- [ ] Repository has 29,434 index files (loading them takes ~30 s per run) because it was
-  never pruned since 2023. The first `prune` will consolidate them.
+- [ ] Repository has 29,434 index files (loading them takes ~30 s per run): one per hourly
+  run since 2023 (~8,760 a year), never pruned. The first `prune` will consolidate them.
 - [ ] Since `/etc` was added, snapshots have the paths `/etc` + `/var/dump`, a new group
   for `forget`. The 108 old `/var/dump`-only snapshots are no longer thinned out; forget
   them by hand once the new group has enough history.
