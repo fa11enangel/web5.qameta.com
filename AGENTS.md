@@ -201,9 +201,8 @@ Audit of 2026-10-30 (read-only, no root). Root commands are for the user to run 
   backup copies of the old files deleted.
 - [ ] Make sure the restic password is also stored outside web5 (password manager). It
   is needed for any restore and is not in the backup.
-- [ ] `/root/ikos-16-2026-08-23.dump` and `/root/ikos-16-datadir-2026-08-23.tar.gz`
-  (from the PG 16 → 18 upgrade) are not backed up (`/root` is not in `backup.txt`). Delete
-  them, or move them to `/var/dump` if they must be kept.
+- [x] Old `/root/ikos-16-2026-08-23.dump` and `/root/ikos-16-datadir-2026-08-23.tar.gz`
+  (from the PG 16 → 18 upgrade) deleted 2026-10-30; not needed.
 - [ ] Repository has 29,434 index files (loading them takes ~30 s per run): one per hourly
   run since 2023 (~8,760 a year), never pruned. The first `prune` will consolidate them.
 - [ ] Since `/etc` was added, snapshots have the paths `/etc` + `/var/dump`, a new group
