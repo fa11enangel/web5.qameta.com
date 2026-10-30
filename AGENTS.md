@@ -64,7 +64,7 @@ Unlike web1/web2 this host is still on Ubuntu, not Debian 13. No ISPConfig.
 | App / service | Notes |
 |---|---|
 | `ikos` | Rails (Puma 7.2, Ruby 4.0.9, herokuish), `RAILS_ENV=production`, 2 web dynos on :5000, plus `resque:work` worker and `resque:scheduler`. Domain `www.iko-datenbank.de` (CNAME → `web5.qameta.com`), Let's Encrypt cert valid to 2026-12-23 |
-| `ikos-16`, `ikos-18` | Dokku Postgres services. **Both are running**; `ikos-16`'s `LINKS` file is empty (since 2026-10-28), so the app presumably uses `ikos-18`. Leftover after the PG 16 → 18 upgrade? |
+| `ikos-18` | Dokku Postgres service (PG 18), linked. The unlinked leftover `ikos-16` was destroyed on 2026-10-30; its last dump is `/var/dump/pg/ikos-16.dump` |
 | `ikos-redis` | Dokku Redis service (Resque queue), linked |
 
 `/var/lib/dokku/data/storage` is empty: the app has no persistent volumes.
@@ -105,8 +105,8 @@ repo.** The scripts are tracked in `server/root/bin/` (rewritten 2026-10-30 afte
 2. `/root/bin/pg_dump_files.sh` (same as web1): for every service in
    `dokku postgres:list`, runs `dokku postgres:export <svc>` to
    `/var/dump/pg/<svc>.dump.tmp`, then renames it to `<svc>.dump`. A failed or empty
-   export keeps the previous file and makes the script exit 1. Today that covers
-   `ikos-16` and `ikos-18`; new services are picked up automatically.
+   export keeps the previous file and makes the script exit 1. Today that is
+   `ikos-18`; new services are picked up automatically.
 
 Before 2026-10-30 the script exported only `ikos-18` to `/var/dump/pg/ikos-postgres.dump`
 (597 KB on 2026-10-30) and pinged `/fail` only if that dump failed.
@@ -184,7 +184,8 @@ Audit of 2026-10-30 (read-only, no root). Root commands are for the user to run 
 
 - [ ] **Backups — new scripts** installed 2026-10-30 14:29 (see [Backups](#backups); old
   script kept as `/root/bin/backup.sh.bak-2026-10-30`). `pg_dump_files.sh` tested by
-  hand: `ikos-16.dump` (595 KB) and `ikos-18.dump` (598 KB) written. Still to do: confirm
+  hand: `ikos-16.dump` (595 KB) and `ikos-18.dump` (598 KB) written; `ikos-18.dump` is the
+  same size as the old `ikos-postgres.dump`, so the app's db is `ikos-18`. Still to do: confirm
   the first nightly run pings OK, then delete the old `/var/dump/pg/ikos-postgres.dump`
   (restic keeps its history).
 - [ ] Retention: `forget` runs without `--prune`, so the repository only grows. Move it to
@@ -196,9 +197,9 @@ Audit of 2026-10-30 (read-only, no root). Root commands are for the user to run 
 - [ ] **Mail:** install postfix as a loopback-only relay via `web2.qameta.com`, `root` →
   `serverservice@qameta.com`, like web1. Until then cron and unattended-upgrades errors
   are silent (backups at least ping healthchecks.io).
-- [ ] Decide on `ikos-16`: confirm the app uses `ikos-18` (`dokku postgres:links`,
-  `DATABASE_URL` host), export a final dump, then `dokku postgres:destroy ikos-16` (needs
-  user approval). Saves RAM on this small VM.
+- [x] `ikos-16` destroyed (2026-10-30, no linked apps). Its final dump
+  `/var/dump/pg/ikos-16.dump` (2026-10-30 14:29) stays in `/var/dump/pg/` and is no longer
+  updated; delete it once it is surely not needed (restic keeps it in older snapshots).
 - [ ] Remove the leftover Caddy proxy container (`dokku caddy:stop`, after checking
   `dokku proxy:report ikos` shows `nginx`).
 - [ ] Pending updates (2026-10-30): 3 security updates incl. kernel 5.15.0-202
