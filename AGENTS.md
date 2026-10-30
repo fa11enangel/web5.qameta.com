@@ -87,15 +87,13 @@ networks and are not published. Anything else on a public interface — especial
 
 ## Backups
 
-`/etc/cron.d/backup` (root, 0600 since 2026-10-30, unchanged since 2023-06-22) runs
-`nice -n 19 /root/bin/backup.sh` **every hour at :28** (`28 * * * *`). It also sets
-`RESTIC_REPOSITORY` (`sftp:u230071-sub7@u230071.your-storagebox.de:/restic-repo`, a
-Hetzner Storage Box sub-account) and `RESTIC_PASSWORD_FILE=/root/.restic-password`. The password lives only in that file
-(root, 0600, since 2026-10-30, like eltern.server); `/root/.bashrc` exports the same two
-variables, so `restic` works directly in a root shell. **Never copy the password into
-this repo.** No `MAILTO`, and there is no MTA
-anyway. **Never copy the password into this
-repo.** The scripts are tracked in `server/root/bin/` (rewritten 2026-10-30 after web1):
+`/etc/cron.d/backup` (root, 0600 since 2026-10-30) runs `nice -n 19 /root/bin/backup.sh`
+**every hour at :28** (`28 * * * *`). It also sets `RESTIC_REPOSITORY`
+(`sftp:u230071-sub7@u230071.your-storagebox.de:/restic-repo`, a Hetzner Storage Box
+sub-account) and `RESTIC_PASSWORD_FILE=/root/.restic-password`. The password lives only
+in that file (root, 0600, since 2026-10-30, like eltern.server); `/root/.bashrc` exports
+the same two variables, so `restic` works directly in a root shell. **Never copy the
+password into this repo.** No `MAILTO`, and there is no MTA anyway. The scripts are tracked in `server/root/bin/` (rewritten 2026-10-30 after web1):
 
 1. `/root/bin/backup.sh`:
    - runs `pg_dump_files.sh`, then
